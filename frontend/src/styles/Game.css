@@ -1,0 +1,270 @@
+.game-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.game-container h1 {
+  margin-bottom: 2rem;
+  font-size: 2.5rem;
+  text-align: center;
+  background: linear-gradient(90deg, #4f46e5, #8b5cf6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
+}
+
+.error-message {
+  background-color: rgba(220, 38, 38, 0.2);
+  border: 1px solid rgba(220, 38, 38, 0.5);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  width: 100%;
+}
+
+.error-message p {
+  margin-bottom: 0.5rem;
+}
+
+.error-message button {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.error-message button:hover {
+  background-color: #dc2626;
+}
+
+.start-screen {
+  text-align: center;
+  width: 100%;
+  max-width: 500px;
+  background-color: rgba(31, 41, 55, 0.7);
+  border-radius: 1rem;
+  padding: 2rem;
+  margin-top: 2rem;
+}
+
+.start-screen h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.start-screen p {
+  margin-bottom: 2rem;
+  color: #d1d5db;
+}
+
+.start-screen button, 
+.round-result button,
+.end-buttons button {
+  background: linear-gradient(90deg, #4f46e5, #8b5cf6);
+  border: none;
+  color: white;
+  padding: 0.75rem 2rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.125rem;
+}
+
+.start-screen button:hover,
+.round-result button:hover,
+.end-buttons button:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.game-screen {
+  width: 100%;
+  max-width: 800px;
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.round-info {
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.score-display {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.crypto-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.crypto-card {
+  background-color: rgba(31, 41, 55, 0.8);
+  padding: 2rem;
+  border-radius: 1rem;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.crypto-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+}
+
+.crypto-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #d1d5db;
+}
+
+.crypto-card .price {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #10b981;
+}
+
+.crypto-card .price.unknown {
+  font-size: 3rem;
+  color: #6366f1;
+}
+
+.loading {
+  color: #9ca3af;
+  font-size: 1.25rem;
+}
+
+.guess-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.guess-buttons button {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 1.25rem;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.higher-button {
+  background-color: #10b981;
+}
+
+.higher-button:hover {
+  background-color: #059669;
+}
+
+.lower-button {
+  background-color: #ef4444;
+}
+
+.lower-button:hover {
+  background-color: #dc2626;
+}
+
+.loading-message {
+  text-align: center;
+  margin-top: 2rem;
+  color: #9ca3af;
+  font-size: 1.25rem;
+}
+
+.round-result {
+  margin-top: 2rem;
+  text-align: center;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  animation: fadeIn 0.5s ease;
+}
+
+.round-result.win {
+  background-color: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.5);
+}
+
+.round-result.lose {
+  background-color: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+}
+
+.round-result h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.end-screen {
+  text-align: center;
+  width: 100%;
+  max-width: 600px;
+  background-color: rgba(31, 41, 55, 0.7);
+  border-radius: 1rem;
+  padding: 2rem;
+  margin-top: 2rem;
+}
+
+.end-screen h2 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.final-score {
+  margin-bottom: 2rem;
+}
+
+.final-score p {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.final-score h3 {
+  font-size: 1.75rem;
+  margin-top: 1rem;
+  color: #8b5cf6;
+}
+
+.end-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+} 

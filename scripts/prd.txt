@@ -1,0 +1,288 @@
+# Product Requirements Document: Higher or Lower Crypto Challenge
+
+## 1. Overview
+
+### Project Description
+Higher or Lower Crypto Challenge is a multiplayer web game that leverages SNAK and Starknet to create an engaging blockchain-integrated gaming experience. Players compete to correctly identify which of two presented cryptocurrencies has the higher current market price. The game requires each player to deposit a token stake, with the winner of 5 rounds collecting both stakes and any additional in-game rewards.
+
+This MVP aims to deliver a simple yet engaging game that effectively demonstrates the integration of SNAK for blockchain interactions (including token transfers and Binance MCP-powered price fetching).
+
+### Hackathon Criteria
+This project emphasizes SNAK and Starknet usage as a core judging criterion. The implementation must showcase effective use of SNAK's capabilities for token transfers and price data retrieval, demonstrating meaningful integration with the Starknet blockchain ecosystem.
+
+## 2. Scope of Integration
+
+### Primary Functions
+- **Token Stakes**: Players must stake tokens to participate in the game, managed through SNAK's token transfer capabilities.
+- **Token Swaps**: The game will facilitate token swaps as needed for gameplay mechanics.
+- **Real-time Price Data**: Integration with SNAK's Binance MCP functionality to fetch current prices for a variety of cryptocurrencies (ETH, BTC, SOL, AVAX, etc.).
+- **Point Calculation**: Points awarded based on both correctness and speed of player responses.
+
+### Fallback Strategy
+The application architecture must implement a separation of concerns that ensures the core game logic and non-blockchain elements continue to function if SNAK components fail or become unresponsive. This includes implementing timeouts, fallback states, and graceful degradation of blockchain-dependent features.
+
+## 3. System Architecture
+
+### High-Level Architecture
+
+The system will consist of the following components:
+- **Frontend**: Modern React-based web application with WebSocket support for real-time gameplay.
+- **Backend**: Python-based API server handling game logic, player sessions, and scoring.
+- **SNAK Integration Layer**: Dedicated Node.js/TypeScript service that wraps SNAK functionality (token transfers, price fetching) and isolates blockchain interactions.
+- **Smart Contracts**: Cairo contracts deployed on Starknet to handle token stakes and game rewards.
+
+The architecture will implement a fallback mechanism ensuring the main application logic remains decoupled from SNAK-dependent components, allowing the game to continue functioning in a limited capacity even if blockchain interactions fail.
+
+### Project Structure Directory Layout
+```
+crypto-higher-lower/
+  ├── frontend/                # React-based web application (hosted on Vercel)
+  │   ├── public/              # Static assets
+  │   ├── src/                 # Source code
+  │   │   ├── components/      # UI components
+  │   │   ├── contexts/        # React contexts for state management
+  │   │   ├── hooks/           # Custom React hooks
+  │   │   ├── pages/           # Page components
+  │   │   ├── services/        # API service clients
+  │   │   └── utils/           # Utility functions
+  ├── backend/                 # Python-based backend service
+  │   ├── api/                 # API endpoints
+  │   ├── models/              # Data models
+  │   ├── services/            # Business logic services
+  │   └── utils/               # Utility functions
+  ├── snak/                    # SNAK repository (as a submodule)
+  ├── snak-integration/        # Node.js SNAK integration wrapper service
+  │   ├── node_modules/
+  │   ├── src/                 # TypeScript source code (Express/NestJS server)
+  │   │   ├── services/        # Logic to interact with SNAK submodule functions
+  │   │   └── server.ts        # API server entry point
+  │   ├── tsconfig.json
+  │   └── package.json
+  └── smart-contracts/         # Cairo contracts for Starknet
+      ├── src/                 # Contract source code
+      └── tests/               # Contract tests
+```
+
+### Languages & Tools
+- **Frontend**: React, TypeScript, TailwindCSS, WebSockets.
+- **Backend**: Python with FastAPI.
+- **SNAK Integration**: Node.js/TypeScript service (e.g., using Express or NestJS) to wrap the SNAK submodule.
+- **Smart Contracts**: Cairo.
+- **Package Management**: npm/yarn for frontend/integration, pip for backend, pnpm likely for SNAK submodule.
+- **Deployment**: Vercel for frontend, managed services (e.g., Docker containers, serverless functions) for backend and integration layer.
+
+### Design Aesthetics
+The frontend must feature an extremely modern and beautiful design with:
+- Sleek, responsive UI with subtle animations.
+- Crypto-themed visual elements.
+- Real-time updates during gameplay.
+- Mobile-friendly layout.
+
+## 4. Integration Details
+
+### SNAK Integration Layer (Node.js Wrapper Service)
+
+#### Setup Process
+1. **SNAK Submodule**: Ensure the SNAK repository is cloned as a submodule in the `snak/` directory.
+   ```bash
+   git submodule update --init --recursive
+   ```
+2. **SNAK Dependencies**: Install SNAK's own dependencies (likely using `pnpm install` within the `snak/` directory, refer to SNAK's README).
+3. **Wrapper Service Setup**: Inside `snak-integration/`:
+   - Initialize a Node.js project (`npm init -y` or `yarn init -y`).
+   - Install necessary dependencies: `express`, `typescript`, `@types/node`, `@types/express`, potentially `ts-node`, `nodemon` for development.
+   - Configure `tsconfig.json`.
+
+#### Integration Approach: API Wrapper Service
+1. Create an Express.js (or potentially leverage SNAK's NestJS structure if feasible via direct import) service within `snak-integration/src/server.ts`.
+2. This service will import necessary functions/modules directly from the *sibling* `../snak/` directory (adjusting paths and potentially needing TypeScript path mapping in `tsconfig.json`).
+3. **Endpoints**: Expose simple HTTP endpoints:
+   - `/transfer`: Handles requests from the Python backend to initiate token transfers using SNAK functions.
+   - `/price`: Handles requests to fetch token prices using SNAK's Binance MCP integration.
+   - `/health`: Basic health check.
+
+```typescript
+// Example structure in snak-integration/src/server.ts
+import express, { Request, Response } from 'express';
+// Adjust path based on SNAK's actual export structure
+import { transferTokenFunction, getPriceFunction } from '../snak/path/to/relevant/module';
+
+const app = express();
+const PORT = process.env.SNAK_WRAPPER_PORT || 3001;
+
+app.use(express.json());
+
+app.post('/transfer', async (req: Request, res: Response) => {
+  try {
+    const { from, to, amount, token } = req.body;
+    // Validate input
+    const result = await transferTokenFunction(/* args */);
+    res.status(200).json({ status: 'success', data: result });
+  } catch (error: any) { // Add basic error handling
+    console.error("SNAK Transfer Error:", error.message);
+    res.status(500).json({ status: 'error', message: 'SNAK transfer failed' });
+  }
+});
+
+app.get('/price/:symbol', async (req: Request, res: Response) => {
+  try {
+    const { symbol } = req.params;
+    // Validate input
+    const price = await getPriceFunction(symbol);
+    res.status(200).json({ status: 'success', data: { symbol, price } });
+  } catch (error: any) {
+    console.error("SNAK Price Error:", error.message);
+    res.status(500).json({ status: 'error', message: 'Failed to get price via SNAK' });
+  }
+});
+
+// Health check, etc.
+
+app.listen(PORT, () => {
+  console.log(`SNAK Integration Service running on port ${PORT}`);
+});
+```
+
+**Isolation**: This wrapper service isolates the main Python backend from the complexities and direct dependencies of the SNAK Node.js project. The backend only needs to make simple HTTP calls.
+
+### Token Transfers & Swaps
+
+Token transfers for staking will be initiated by the Python backend calling the `/transfer` endpoint on the SNAK Integration Layer service.
+
+```python
+# Pseudocode in Python backend service
+import requests
+
+SNAK_WRAPPER_URL = "http://localhost:3001" # Or from config
+
+def initiate_stake_via_snak_wrapper(player_address, stake_amount, token_address):
+    try:
+        response = requests.post(
+            f"{SNAK_WRAPPER_URL}/transfer",
+            json={
+                "from": player_address, # Or potentially a game wallet address
+                "to": GAME_CONTRACT_ADDRESS,
+                "amount": stake_amount,
+                "token": token_address
+            },
+            timeout=10 # Add timeout
+        )
+        response.raise_for_status() # Raise HTTPError for bad responses (4xx or 5xx)
+        
+        data = response.json()
+        if data.get("status") == "success":
+            # Record stake, return transaction hash or relevant data
+            return {"status": "success", "data": data.get("data")}
+        else:
+            # Handle application-level error from wrapper
+            return {"status": "error", "message": data.get("message", "SNAK wrapper failed")}
+            
+    except requests.exceptions.RequestException as e:
+        # Handle network errors, timeouts
+        print(f"Error calling SNAK wrapper: {e}")
+        return {"status": "error", "message": "Failed to communicate with SNAK service"}
+    except Exception as e:
+        # Handle other unexpected errors
+        print(f"Unexpected error during stake: {e}")
+        return {"status": "error", "message": "Internal error during staking"}
+
+```
+Error handling, retries, and fallback logic should be implemented in the Python backend when calling the wrapper service.
+
+## 5. Backend & Frontend Communication
+
+### Backend API Design
+
+The Python backend API remains largely the same, but interactions requiring SNAK functionality (staking, price checks for the game) will now involve HTTP calls to the **Node.js SNAK Integration Layer service**.
+
+```python
+# Example FastAPI backend route
+@app.post("/api/games/{game_id}/stake")
+async def place_stake(game_id: str, stake_data: StakeSubmit):
+    # 1. Validate game state, player, etc.
+    # 2. Call the SNAK wrapper service to initiate the transfer
+    result = await stake_service.initiate_stake_via_snak_wrapper(
+        player_address=stake_data.player_address,
+        stake_amount=stake_data.amount,
+        token_address=stake_data.token_address
+    )
+    # 3. Handle result from wrapper (success/error/fallback)
+    if result["status"] == "success":
+        # Update game state
+        return {"message": "Stake successful", "details": result["data"]}
+    else:
+        # Trigger fallback or return error to frontend
+        raise HTTPException(status_code=400, detail=result["message"])
+
+```
+Implement asynchronous patterns (`async/await` with `httpx` or `aiohttp` in Python) for non-blocking calls to the SNAK wrapper.
+
+### Frontend Considerations
+Frontend communication remains the same (Axios for REST to Python backend, WebSockets for real-time).
+
+## 6. MVP Game Mechanics & Blockchain MVP
+
+### Game Flow
+1. Player creates or joins a game room (via Python backend).
+2. Both players deposit token stakes (frontend -> Python backend -> **Node.js SNAK Wrapper**).
+3. Game consists of 5 rounds.
+4. Each round:
+   - Python backend requests two random crypto symbols.
+   - Python backend calls **Node.js SNAK Wrapper** `/price/:symbol` endpoint for both symbols.
+   - Backend sends symbols (without prices) to frontend via WebSocket.
+   - Players select the higher-priced coin.
+   - Backend evaluates answers based on prices fetched via SNAK wrapper, calculates points.
+   - Backend sends round results via WebSocket.
+5. After 5 rounds, winner determined by Python backend.
+6. Stakes transferred to winner (Python backend -> **Node.js SNAK Wrapper**).
+
+### Fallback Mechanism
+If the SNAK Integration Layer service is unresponsive or returns errors:
+- Price fetching: Backend uses cached/stale prices or informs players.
+- Token transfers: Backend triggers fallback (virtual stakes, retry later) and notifies players.
+
+### Minimum Features
+- Wallet connection.
+- Token staking and transfer via SNAK wrapper service.
+- Real-time crypto price comparisons fetched via SNAK wrapper service.
+- 5-round gameplay loop.
+- Winner determination and stake distribution via SNAK wrapper.
+
+## 7. Testing, Deployment, and Security
+
+### Testing Requirements
+- **SNAK Integration Service**: Unit tests for wrapper logic, integration tests calling actual SNAK submodule functions (mocked or on testnet), endpoint tests.
+- **Python Backend**: Unit tests for business logic, integration tests mocking calls to the SNAK wrapper service, tests for fallback logic.
+- **Frontend**: Component tests, E2E tests covering game flow.
+
+### Deployment Considerations
+- **SNAK Integration Service**: Deploy as a separate Node.js service (e.g., Docker container, serverless function). Requires access to the SNAK submodule code during build/runtime.
+- **Backend**: Deploy Python FastAPI service. Needs the URL of the SNAK Integration Service configured.
+- **Frontend**: Deploy static build to Vercel.
+- **Configuration**: Environment variables for SNAK wrapper URL, Python backend URL, contract addresses, network details, API keys.
+
+### Security Considerations
+- Secure communication between Backend and SNAK Integration Service (e.g., network policies, potentially API keys if deployed publicly).
+- Input validation at both the Python backend and the SNAK Integration Service layer.
+- Protect SNAK's sensitive configurations (private keys, etc.) - should be managed by the SNAK Integration Service, not exposed to the Python backend.
+
+## 8. Monitoring and Maintenance
+
+### Logging and Analytics
+- Log requests/responses between Python backend and SNAK Integration Service.
+- SNAK Integration Service should log interactions with the SNAK submodule and any errors.
+- Monitor health and performance of both services.
+
+### Ongoing Maintenance
+- Keep SNAK submodule updated.
+- Update SNAK Integration Service accordingly if SNAK's internal APIs change.
+- Monitor dependencies for security vulnerabilities in all services.
+
+## 9. Timeline and Milestones (Adjusted)
+
+1. **Setup Phase (Day 1)**: Repo, directories, basic frontend/backend setup, SNAK submodule init.
+2. **SNAK Integration Service MVP (Day 1-2)**: Basic Node.js wrapper service setup (`snak-integration`), implement health check, *initial* working endpoints for `/transfer` and `/price` calling SNAK submodule functions.
+3. **Backend MVP (Day 2)**: Implement core Python backend logic, including making HTTP calls to the SNAK Integration Service endpoints.
+4. **Frontend MVP & Game Logic (Day 2-3)**: Implement core game UI, connect to backend API, implement basic 5-round flow using data from backend (which gets it from SNAK wrapper).
+5. **Blockchain Finalization (Day 3)**: Refine token staking/distribution logic in SNAK wrapper and backend, test E2E blockchain flow.
+6. **Polish & Deployment (Day 3-4)**: Bug fixes, UI polish, deployment of all services, documentation. 

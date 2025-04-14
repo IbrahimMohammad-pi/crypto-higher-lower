@@ -1,0 +1,3 @@
+[submodule "snak"]
+	path = snak
+	url = https://github.com/IbrahimMohammad-pi/snak.git
